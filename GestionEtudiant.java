@@ -14,7 +14,8 @@ public class GestionEtudiant {
             System.out.println("\n==== Menu ====");
             System.out.println("1. Ajouter un étudiant");
             System.out.println("2. Lister les étudiants");
-            System.out.println("3. Quitter");
+            System.out.println("3. Consulter un étudiant");
+            System.out.println("4. Quitter");
 
             System.out.print("Votre choix : ");
             choix = saisir.nextInt();
@@ -28,12 +29,15 @@ public class GestionEtudiant {
                     listerEtudiants();
                     break;
                 case 3:
+                    consulterEtudiant(saisir);
+                    break;
+                case 4:
                     System.out.println("Fin du programme.");
                     break;
                 default:
                     System.out.println("Choix invalide.");
             }
-        } while (choix != 3);
+        } while (choix != 4);
 
         saisir.close();
     }
@@ -63,7 +67,7 @@ public class GestionEtudiant {
         }
     }
 
-    // Méthode pour lister les étudiants
+    // Méthode pour lister tous les étudiants
     static void listerEtudiants() {
         try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
             String ligne;
@@ -73,6 +77,34 @@ public class GestionEtudiant {
                 if (infos.length >= 4) {
                     System.out.println("Matricule : " + infos[0] + " | Nom : " + infos[1] + " | Prénom : " + infos[2] + " | Classe : " + infos[3]);
                 }
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+        }
+    }
+
+    // ✅ Méthode pour consulter un étudiant à partir de son matricule
+    static void consulterEtudiant(Scanner saisir) {
+        System.out.print("Entrez le matricule de l’étudiant à consulter : ");
+        String matriculeRecherche = saisir.nextLine();
+        boolean trouve = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                String[] infos = ligne.split(",");
+                if (infos.length >= 4 && infos[0].equalsIgnoreCase(matriculeRecherche)) {
+                    System.out.println("\n✅ Étudiant trouvé :");
+                    System.out.println("Matricule : " + infos[0]);
+                    System.out.println("Nom : " + infos[1]);
+                    System.out.println("Prénom : " + infos[2]);
+                    System.out.println("Classe : " + infos[3]);
+                    trouve = true;
+                    break;
+                }
+            }
+            if (!trouve) {
+                System.out.println("❌ Aucun étudiant trouvé avec ce matricule.");
             }
         } catch (IOException e) {
             System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
