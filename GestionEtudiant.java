@@ -15,32 +15,23 @@ public class GestionEtudiant {
             System.out.println("2. Lister les étudiants");
             System.out.println("3. Consulter un étudiant");
             System.out.println("4. Modifier un étudiant");
-            System.out.println("5. Quitter");
+            System.out.println("5. Supprimer un étudiant");
+            System.out.println("6. Quitter");
 
             System.out.print("Votre choix : ");
             choix = saisir.nextInt();
             saisir.nextLine(); // vider le buffer
 
             switch (choix) {
-                case 1:
-                    ajouterEtudiant(saisir);
-                    break;
-                case 2:
-                    listerEtudiants();
-                    break;
-                case 3:
-                    consulterEtudiant(saisir);
-                    break;
-                case 4:
-                    modifierEtudiant(saisir);
-                    break;
-                case 5:
-                    System.out.println("Fin du programme.");
-                    break;
-                default:
-                    System.out.println("Choix invalide.");
+                case 1: ajouterEtudiant(saisir); break;
+                case 2: listerEtudiants(); break;
+                case 3: consulterEtudiant(saisir); break;
+                case 4: modifierEtudiant(saisir); break;
+                case 5: supprimerEtudiant(saisir); break;
+                case 6: System.out.println("Fin du programme."); break;
+                default: System.out.println("Choix invalide.");
             }
-        } while (choix != 5);
+        } while (choix != 6);
 
         saisir.close();
     }
@@ -110,7 +101,6 @@ public class GestionEtudiant {
         }
     }
 
-    // ✅ Modifier un étudiant existant
     static void modifierEtudiant(Scanner saisir) {
         System.out.print("Entrez le matricule de l’étudiant à modifier : ");
         String matriculeRecherche = saisir.nextLine();
@@ -123,7 +113,6 @@ public class GestionEtudiant {
             while ((ligne = reader.readLine()) != null) {
                 String[] infos = ligne.split(",");
                 if (infos.length >= 4 && infos[0].equalsIgnoreCase(matriculeRecherche)) {
-                    // Étudiant trouvé, on demande les nouvelles infos
                     System.out.println("Étudiant trouvé. Entrez les nouvelles informations :");
 
                     System.out.print("Nouveau nom : ");
@@ -138,7 +127,7 @@ public class GestionEtudiant {
                     lignes.add(matriculeRecherche + "," + nom + "," + prenom + "," + classe);
                     modifie = true;
                 } else {
-                    lignes.add(ligne); // garder les autres lignes
+                    lignes.add(ligne);
                 }
             }
         } catch (IOException e) {
@@ -151,7 +140,6 @@ public class GestionEtudiant {
             return;
         }
 
-        // Réécriture du fichier avec les données mises à jour
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fichier))) {
             for (String l : lignes) {
                 writer.write(l);
@@ -160,6 +148,45 @@ public class GestionEtudiant {
             System.out.println("✅ Étudiant modifié avec succès !");
         } catch (IOException e) {
             System.err.println("Erreur lors de l'écriture : " + e.getMessage());
+        }
+    }
+
+    // ✅ SUPPRIMER un étudiant
+    static void supprimerEtudiant(Scanner saisir) {
+        System.out.print("Entrez le matricule de l’étudiant à supprimer : ");
+        String matriculeRecherche = saisir.nextLine();
+        boolean supprime = false;
+
+        List<String> lignes = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                String[] infos = ligne.split(",");
+                if (infos.length >= 4 && infos[0].equalsIgnoreCase(matriculeRecherche)) {
+                    supprime = true;
+                    continue; // on ne garde pas la ligne
+                }
+                lignes.add(ligne); // garder toutes les autres
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+            return;
+        }
+
+        if (!supprime) {
+            System.out.println("❌ Aucun étudiant trouvé avec ce matricule.");
+            return;
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fichier))) {
+            for (String l : lignes) {
+                writer.write(l);
+                writer.newLine();
+            }
+            System.out.println("✅ Étudiant supprimé avec succès !");
+        } catch (IOException e) {
+            System.err.println("Erreur lors de l’écriture du fichier : " + e.getMessage());
         }
     }
 }
