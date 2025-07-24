@@ -1,9 +1,8 @@
 import java.io.*;
-import java.util.Scanner;
+import java.util.*;
 
 public class GestionEtudiant {
 
-    // Nom du fichier où seront stockés les étudiants
     static final String fichier = "etudiant.txt";
 
     public static void main(String[] args) {
@@ -15,7 +14,8 @@ public class GestionEtudiant {
             System.out.println("1. Ajouter un étudiant");
             System.out.println("2. Lister les étudiants");
             System.out.println("3. Consulter un étudiant");
-            System.out.println("4. Quitter");
+            System.out.println("4. Modifier un étudiant");
+            System.out.println("5. Quitter");
 
             System.out.print("Votre choix : ");
             choix = saisir.nextInt();
@@ -32,17 +32,19 @@ public class GestionEtudiant {
                     consulterEtudiant(saisir);
                     break;
                 case 4:
+                    modifierEtudiant(saisir);
+                    break;
+                case 5:
                     System.out.println("Fin du programme.");
                     break;
                 default:
                     System.out.println("Choix invalide.");
             }
-        } while (choix != 4);
+        } while (choix != 5);
 
         saisir.close();
     }
 
-    // Méthode pour ajouter un étudiant
     static void ajouterEtudiant(Scanner saisir) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fichier, true))) {
             System.out.print("Matricule : ");
@@ -57,7 +59,6 @@ public class GestionEtudiant {
             System.out.print("Classe : ");
             String classe = saisir.nextLine();
 
-            // Écriture dans le fichier : matricule,nom,prenom,classe
             writer.write(matricule + "," + nom + "," + prenom + "," + classe);
             writer.newLine();
 
@@ -67,7 +68,6 @@ public class GestionEtudiant {
         }
     }
 
-    // Méthode pour lister tous les étudiants
     static void listerEtudiants() {
         try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
             String ligne;
@@ -83,7 +83,6 @@ public class GestionEtudiant {
         }
     }
 
-    // ✅ Méthode pour consulter un étudiant à partir de son matricule
     static void consulterEtudiant(Scanner saisir) {
         System.out.print("Entrez le matricule de l’étudiant à consulter : ");
         String matriculeRecherche = saisir.nextLine();
@@ -108,6 +107,59 @@ public class GestionEtudiant {
             }
         } catch (IOException e) {
             System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+        }
+    }
+
+    // ✅ Modifier un étudiant existant
+    static void modifierEtudiant(Scanner saisir) {
+        System.out.print("Entrez le matricule de l’étudiant à modifier : ");
+        String matriculeRecherche = saisir.nextLine();
+        boolean modifie = false;
+
+        List<String> lignes = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                String[] infos = ligne.split(",");
+                if (infos.length >= 4 && infos[0].equalsIgnoreCase(matriculeRecherche)) {
+                    // Étudiant trouvé, on demande les nouvelles infos
+                    System.out.println("Étudiant trouvé. Entrez les nouvelles informations :");
+
+                    System.out.print("Nouveau nom : ");
+                    String nom = saisir.nextLine();
+
+                    System.out.print("Nouveau prénom : ");
+                    String prenom = saisir.nextLine();
+
+                    System.out.print("Nouvelle classe : ");
+                    String classe = saisir.nextLine();
+
+                    lignes.add(matriculeRecherche + "," + nom + "," + prenom + "," + classe);
+                    modifie = true;
+                } else {
+                    lignes.add(ligne); // garder les autres lignes
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture : " + e.getMessage());
+            return;
+        }
+
+        if (!modifie) {
+            System.out.println("❌ Aucun étudiant trouvé avec ce matricule.");
+            return;
+        }
+
+        // Réécriture du fichier avec les données mises à jour
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fichier))) {
+            for (String l : lignes) {
+                writer.write(l);
+                writer.newLine();
+            }
+            System.out.println("✅ Étudiant modifié avec succès !");
+        } catch (IOException e) {
+            System.err.println("Erreur lors de l'écriture : " + e.getMessage());
         }
     }
 }
